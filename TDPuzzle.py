@@ -5,14 +5,15 @@ pygame.init()
 
 cellsize = 100
 grid = []
-rows = 10
-cols = 10
+rows = 8
+cols = 8
+block_selected = "Block"
 
 red = (255,0,0)
 white = (255,255,255)
 
-width = rows*cellsize
-height = cols*cellsize
+width = cols*cellsize
+height = rows*cellsize
 screen = pygame.display.set_mode([width, height])
 
 game_started = True
@@ -25,7 +26,7 @@ for row in range(rows):
 
         pygame.draw.rect(screen, (255,255,255), [rect_x,rect_y,cellsize,cellsize], 5)
 
-pygame.display.update()
+
 
 for row in range(rows):
     grid.append([])
@@ -35,7 +36,22 @@ for row in range(rows):
 
 while game_started:
     for event in pygame.event.get():
-        if event.type == pygame.MOUSEBUTTONDOWN:
+        
+        if event.type == pygame.QUIT:
+            game_started = False
+        
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_1:
+                block_selected = "Block"
+                print(f"Selected: {block_selected}")
+            elif event.key == pygame.K_2:
+                block_selected = "Enemy"
+                print(f"Selected: {block_selected}")
+            elif event.key == pygame.K_3:
+                block_selected = "None"
+                print(f"Selected: {block_selected}")
+        
+        elif event.type == pygame.MOUSEBUTTONDOWN:
             click_x = pygame.mouse.get_pos()[0]
             click_y = pygame.mouse.get_pos()[1]
 #             print(pygame.mouse.get_pos())
@@ -43,16 +59,14 @@ while game_started:
             col_clicked = click_x // cellsize
             row_clicked = click_y // cellsize
             print(f"row: {row_clicked} col: {col_clicked}")
-            grid[row_clicked][col_clicked].cell_type = "Block"
+            grid[row_clicked][col_clicked].cell_type = block_selected
             #print(grid)
             for col in grid:
                 for cell in col:
                     cell.cell_colour(cellsize, screen)
-#             pygame.draw.rect(screen, white, [col_clicked*cellsize,row_clicked*cellsize,cellsize,cellsize])
-#             pygame.display.update()
-        
+                    
         else:
             pass
-    
         
+        pygame.display.update()
 pygame.quit()

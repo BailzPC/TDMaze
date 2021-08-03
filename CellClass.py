@@ -6,7 +6,6 @@ class Cell:
         self.y = y
         self.x = x
         self.cell_type = None
-        # wall, watever
         
     def calcpath(self,dist):
         if not self.dist:
@@ -20,11 +19,16 @@ class Cell:
     
     def cell_colour(self, cellsize, screen):
         self.cellsize = cellsize
-        if self.cell_type == None:
-            pass
+
+        if self.cell_type == "None":
+            pygame.draw.rect(screen, (0,0,0), [self.x*self.cellsize+3,self.y*self.cellsize+3,self.cellsize-6,self.cellsize-6])
+            
         elif self.cell_type == "Block":
-            pygame.draw.rect(screen, (255,255,255), [self.x*self.cellsize,self.y*self.cellsize,self.cellsize,self.cellsize])
-            pygame.display.update()
+            pygame.draw.rect(screen, (120,120,120), [self.x*self.cellsize+3,self.y*self.cellsize+3,self.cellsize-6,self.cellsize-6])
+            
+        elif self.cell_type == "Enemy":
+            pygame.draw.rect(screen, (255,0,0), [self.x*self.cellsize+3,self.y*self.cellsize+3,self.cellsize-6,self.cellsize-6])
+            
         else:
             pass
     
