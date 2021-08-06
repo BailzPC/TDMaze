@@ -18,6 +18,16 @@ height = rows*cellsize
 screen = pygame.display.set_mode([width, height])
 screen.fill((0,100,0))
 
+clock = pygame.time.Clock()
+timerfont = pygame.font.SysFont(None, 200)
+
+counter = 4.0
+counternumber = counter
+
+timertext = timerfont.render(str(round(counter,1)), False, (0, 150, 200))
+timer_event = pygame.USEREVENT+1
+pygame.time.set_timer(timer_event, 100)
+
 game_started = True
 
 for row in range(rows):
@@ -27,8 +37,6 @@ for row in range(rows):
 #         print(rect_x)
 
         pygame.draw.rect(screen, (255,255,255), [rect_x,rect_y,cellsize,cellsize], 5)
-
-
 
 for row in range(rows):
     grid.append([])
@@ -40,12 +48,30 @@ grid[0][cols-1].cell_type = "Button"
 top_right = grid[0][cols-1].cell_type
 
 while game_started:
+    
+    clock.tick(300)
+    
     for event in pygame.event.get():
-        
+        print(event)
         if event.type == pygame.QUIT:
             game_started = False
         
-        elif event.type == pygame.KEYDOWN:
+        if event.type == pygame.ACTIVEEVENT:
+            if event.gain == 1 and event.state == 6:
+                counter = counternumber
+                print("1")
+        elif event.type == timer_event:
+            counter -= 0.1
+            timertext = timerfont.render(str(round(counter,1)), True, (0, 150, 200))
+            if counter == 0:
+                pygame.time.set_timer(timer_event, 0)
+                print("2")
+                break
+            
+        pygame.display.flip()
+        pygame.display.update()
+        
+        if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_1:
                 block_selected = "Block"
                 print(f"Selected: {block_selected}")
@@ -89,4 +115,5 @@ while game_started:
             pass
         
         pygame.display.update()
+        
 pygame.quit()
