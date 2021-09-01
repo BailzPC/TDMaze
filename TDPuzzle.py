@@ -4,20 +4,19 @@ pygame.init()
 
 cellsize = 100
 grid = []
-rows = 10
-cols = 10
+rows = 15
+cols = 20
 block_selected = "Block"
 cell_type_clicked = "None"
+path_calculated = False
+enemies = []
 
 red = (255,0,0)
 white = (255,255,255)
-bg_colour = (0,100,0)
-button_colour = (161,113,136)
 
 width = cols*cellsize
 height = rows*cellsize
 screen = pygame.display.set_mode([width, height])
-screen.fill(bg_colour)
 
 game_started = True
 
@@ -33,19 +32,19 @@ for row in range(rows):
 for row in range(rows):
     grid.append([])
     for col in range(cols):
-        cell = Cell(col,row,None)
+        cell = Cell(col,row,"None",None)
         grid[row].append(cell)
 
 #changes where button is, button is end goal and timer
 
-button = grid[3][cols-5]
-button.cell_type = "Button"
+button = grid[5][10]
+button.set_cell("Button")
 button.dist = 0
 button_x = button.x
 button_y = button.y
 
 clock = pygame.time.Clock()
-
+game_won = False
 timer_started = False
 game_speed = 1000
 
@@ -56,11 +55,29 @@ while game_started:
     for event in pygame.event.get():
         
         #Timer logic, counts down every second
-        if event.type == pygame.USEREVENT: 
+        if event.type == pygame.USEREVENT:
             counter -= 1
             text = str(counter).rjust(3) if counter > 0 else 'Win!'
+            if counter < 1:
+                game_won = True
+                    
+            for col in grid:
+                for cell in col:
+                    if cell.cell_type == "Enemy":
+                        enemies.append(cell)
             
+            if game_won != True:
+                for enemy in enemies:
+                    enemy.enemy_move(grid)
+                
+            for col in grid:
+                for cell in col:
+                    cell.cell_colour(cellsize, screen, font)
+                    
         if event.type == pygame.QUIT:
+            game_started = False
+            
+        if button.button_reached == True:
             game_started = False
         
         #Cycles through blocks to place using number keys
@@ -79,19 +96,7 @@ while game_started:
                 block_selected = "Void"
                 print(f"Selected: {block_selected}")
                 
-            #Recalculates all the pathfinding numbers
-            elif event.key == pygame.K_5:
-                for col in grid:
-                    for cell in col:
-                        if cell.cell_type != "Button":
-                            cell.dist = None
-                            
-                button.calcpath(button.dist, grid)
-                
-                for col in grid:
-                    for cell in col:
-                        cell.cell_colour(cellsize, screen)
-                        screen.blit(font.render(str(cell.dist), True, (0, 0, 0)), (cell.x*cellsize+6, cell.y*cellsize+32))
+        #Recalculates all the pathfinding numbers
         
         #If in the planning phase, places block by setting
         #the tile you clicked on to block_selected, unless void or button cell
@@ -103,21 +108,28 @@ while game_started:
             row_clicked = click_y // cellsize
             cell_type_clicked = grid[row_clicked][col_clicked].cell_type
             
-            
-            print(f"distance: {grid[row_clicked][col_clicked].dist}")
-            
             if cell_type_clicked == "Void":
                 print("You cannot place there")
-#             
-#             elif cell_type_clicked == "Button":
-#                 pygame.time.set_timer(pygame.USEREVENT, game_speed)
-#                 if not timer_started:
-#                     timer_started = True
-#                     print("The game has begun!")
-#                     
+            
+            elif cell_type_clicked == "Button":
+                pygame.time.set_timer(pygame.USEREVENT, game_speed)
+                if not timer_started:
+                    timer_started = True
+                    print("The game has begun!")
+                    
             else:
-                grid[row_clicked][col_clicked].cell_type = block_selected
+                grid[row_clicked][col_clicked].set_cell(block_selected)
         
+            for col in grid:
+                for cell in col:
+                    if cell.cell_type != "Button":
+                        cell.dist = None
+                        
+            button.calc_path(button.dist, grid)
+            path_calculated = True
+            for col in grid:
+                for cell in col:
+                    cell.cell_colour(cellsize, screen, font)
         
         #Cycle through timer speeds clicking the button after game started
                 
@@ -126,7 +138,7 @@ while game_started:
             click_y = pygame.mouse.get_pos()[1]
             col_clicked = click_x // cellsize
             row_clicked = click_y // cellsize
-
+            
             cell_type_clicked = grid[row_clicked][col_clicked].cell_type
             
             if cell_type_clicked == "Button":
@@ -149,11 +161,12 @@ while game_started:
             pass
     
     #updates the screen every loop, cells colour themselves
-    #
     
+    if not path_calculated:
+        button.calc_path(button.dist, grid)
     for col in grid:
         for cell in col:
-            cell.cell_colour(cellsize, screen)
+            cell.cell_colour(cellsize, screen, font)
     screen.blit(font.render(text, True, (0, 0, 0)), (button_x*cellsize+6, button_y*cellsize+32))
     pygame.display.flip()
     pygame.display.update()

@@ -1,16 +1,17 @@
 import pygame
-# pygame.font.init()
-# myfont = pygame.font.SysFont('Comic Sans MS', 30)
-
 
 class Cell:
-    def __init__(self,x,y,cell_type):
+    def __init__(self,x,y,cell_type,button_reached):
         self.dist = None
         self.y = y
         self.x = x
-        self.cell_type = None
-
-    def calcpath(self, dist, grid):
+        self.cell_type = "None"
+        self.button_reached = None
+        self.colour = (0, 100, 0)
+        
+#     Basic pathfinding calculation, scanning from the 'button' outwards, allows path to be recalculates with calc_path
+#     anything but 'none', 'enemy' and 'button' will act as a wall to the pathfinding
+    def calc_path(self, dist, grid):
         if self.cell_type != "Button" and self.dist != None and self.dist <= (dist + 1):
             return
         
@@ -19,42 +20,60 @@ class Cell:
 
         for xoff, yoff in ((-1,0), (0,-1), (1,0), (0,1)):
             try:
+                if self.y+yoff < 0 or self.x+xoff < 0:
+                    continue
                 neighbour = grid[self.y+yoff][self.x+xoff]
-                if neighbour.cell_type in [None, "Enemy", "Button"]:
-                    neighbour.calcpath(self.dist, grid)
+                if neighbour.cell_type in ["None", "Enemy", "Button"]:
+                    neighbour.calc_path(self.dist, grid)
             except:
                 pass
-        
-    def set_cell(self, celltype):
-        self.cell_type = celltype
-        print(celltype)
+            
+#     Pathfinding to make the enemy move and scan around it for the shortest path calculated in calc_path
+#     also looks if the button has been reached by an enemy
     
-    def cell_colour(self, cellsize, screen):
-        self.cellsize = cellsize
+    def enemy_move(self, grid):
+        min_dist = self.dist
+        neigh = None
+        enemy_neighbour = None
+    
+        for xoff, yoff in ((-1,0), (0,-1), (1,0), (0,1)):
+            try:
+                if self.y+yoff < 0 or self.x+xoff < 0:
+                    continue
+                enemy_neighbour = grid[self.y+yoff][self.x+xoff]
+            except:
+                pass
+            if enemy_neighbour.dist != None:
+                if enemy_neighbour.dist < min_dist:
+                    min_dist = enemy_neighbour.dist
+                    neigh = enemy_neighbour
+                    if neigh.cell_type == "Button":
+                        neigh.button_reached = True
+        self.set_cell("None")
+        neigh.set_cell("Enemy")
 
-        if self.cell_type == "None":
-            pygame.draw.rect(screen, (0,100,0), [self.x*self.cellsize+3,self.y*self.cellsize+3,self.cellsize-6,self.cellsize-6])
-#             textsurface = myfont.render(str(self.dist), False, (0, 0, 0))
-#             screen.blit(textsurface, (self.x*cellsize+6, self.y*cellsize+30))
-            
-        elif self.cell_type == "Block":
-            pygame.draw.rect(screen, (120,120,120), [self.x*self.cellsize+3,self.y*self.cellsize+3,self.cellsize-6,self.cellsize-6])
-            
-            
-        elif self.cell_type == "Enemy":
-            pygame.draw.rect(screen, (255,0,0), [self.x*self.cellsize+3,self.y*self.cellsize+3,self.cellsize-6,self.cellsize-6])
-        
-        
-        elif self.cell_type == "Void":
-            pygame.draw.rect(screen, (50,50,200), [self.x*self.cellsize+3,self.y*self.cellsize+3,self.cellsize-6,self.cellsize-6])
-            
-            
-        elif self.cell_type == "Button":
-            pygame.draw.rect(screen, (161,113,136), [self.x*self.cellsize+3,self.y*self.cellsize+3,self.cellsize-6,self.cellsize-6])
-            
-            
-        else:
-            pass
+#     set cell function, allows easy changing from one type of cell to another using set_cell(type)
+#     also updates the colour to be redrawn with cell_colour
+    def set_cell(self, cell_type):
+        self.cell_type = cell_type
+        if cell_type == "Button":
+            self.colour = (161,113,136)
+        elif cell_type == "None":
+            self.colour = (0,100,0)
+        elif cell_type == "Block":
+            self.colour = (120,120,120)
+        elif cell_type == "Enemy":
+            self.colour = (255,0,0)
+        elif cell_type == "Void":
+            self.colour = (50,50,200)
     
-    def __repr__(self):
-        return str(self.cell_type)
+#     cell colour function, updates the colour of the specific cell, usually run in a for loop for all cells
+    def cell_colour(self, cellsize, screen, font):
+        self.cellsize = cellsize
+        pygame.draw.rect(screen, self.colour, [self.x*self.cellsize+3,self.y*self.cellsize+3,self.cellsize-6,self.cellsize-6])
+        
+#         draws pathfinding number on each cell
+# 
+#         if self.cell_type not in ["Block", "Void", "Button"]:
+#             screen.blit(font.render(str(self.dist), True, (0, 0, 0)), (self.x*cellsize+6, self.y*cellsize+32))
+        
