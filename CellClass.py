@@ -1,12 +1,13 @@
 import pygame
-
+from fractions import Fraction
 class Cell:
-    def __init__(self,x,y,cell_type,button_reached):
+    def __init__(self,x,y,cell_type,button_reached,enemies_cell):
         self.dist = None
         self.y = y
         self.x = x
         self.cell_type = "None"
         self.button_reached = None
+        self.enemies_cell = 0
         self.colour = (0, 100, 0)
         
 #     Basic pathfinding calculation, scanning from the 'button' outwards, allows path to be recalculates with calc_path
@@ -49,8 +50,11 @@ class Cell:
                     neigh = enemy_neighbour
                     if neigh.cell_type == "Button":
                         neigh.button_reached = True
-        self.set_cell("None")
+        neigh.enemies_cell += 1
         neigh.set_cell("Enemy")
+        self.enemies_cell -= 1
+        if self.enemies_cell <= 0:
+            self.set_cell("None")
 
 #     set cell function, allows easy changing from one type of cell to another using set_cell(type)
 #     also updates the colour to be redrawn with cell_colour
@@ -60,6 +64,7 @@ class Cell:
             self.colour = (161,113,136)
         elif cell_type == "None":
             self.colour = (0,100,0)
+            self.enemies_cell = 0
         elif cell_type == "Block":
             self.colour = (120,120,120)
         elif cell_type == "Enemy":
@@ -70,7 +75,8 @@ class Cell:
 #     cell colour function, updates the colour of the specific cell, usually run in a for loop for all cells
     def cell_colour(self, cellsize, screen, font):
         self.cellsize = cellsize
-        pygame.draw.rect(screen, self.colour, [self.x*self.cellsize+3,self.y*self.cellsize+3,self.cellsize-6,self.cellsize-6])
+        pygame.draw.rect(screen, self.colour, [self.x*self.cellsize+cellsize/(100/3),self.y*self.cellsize+cellsize/(100/3),
+                                               self.cellsize-cellsize/(100/6),self.cellsize-cellsize/(100/6)])
         
 #         draws pathfinding number on each cell
 # 

@@ -2,10 +2,10 @@ import pygame
 from CellClass import Cell
 pygame.init()
 
-cellsize = 100
+cellsize = 50
 grid = []
-rows = 15
-cols = 20
+rows = 20
+cols = 30
 block_selected = "Block"
 cell_type_clicked = "None"
 path_calculated = False
@@ -25,14 +25,14 @@ for row in range(rows):
         rect_x = cellsize * col
         rect_y = cellsize * row
 
-        pygame.draw.rect(screen, (255,255,255), [rect_x,rect_y,cellsize,cellsize], 5)
+        pygame.draw.rect(screen, (255,255,255), [rect_x,rect_y,cellsize,cellsize], round(cellsize/20))
 
 #append cells into grid
 
 for row in range(rows):
     grid.append([])
     for col in range(cols):
-        cell = Cell(col,row,"None",None)
+        cell = Cell(col,row,"None",None,0)
         grid[row].append(cell)
 
 #changes where button is, button is end goal and timer
@@ -49,18 +49,20 @@ timer_started = False
 game_speed = 1000
 
 counter, text = 30, '30'.rjust(3)
-font = pygame.font.SysFont('Consolas', 36)
+font = pygame.font.SysFont('Consolas', round(cellsize/3))
 
 while game_started:
     for event in pygame.event.get():
         
-        #Timer logic, counts down every second
+#         Timer logic, counts down every second
         if event.type == pygame.USEREVENT:
             counter -= 1
             text = str(counter).rjust(3) if counter > 0 else 'Win!'
             if counter < 1:
                 game_won = True
-                    
+                     
+            enemies = []
+            
             for col in grid:
                 for cell in col:
                     if cell.cell_type == "Enemy":
@@ -119,6 +121,8 @@ while game_started:
                     
             else:
                 grid[row_clicked][col_clicked].set_cell(block_selected)
+                if grid[row_clicked][col_clicked].cell_type == "Enemy":
+                    grid[row_clicked][col_clicked].enemies_cell = 1
         
             for col in grid:
                 for cell in col:
@@ -167,7 +171,7 @@ while game_started:
     for col in grid:
         for cell in col:
             cell.cell_colour(cellsize, screen, font)
-    screen.blit(font.render(text, True, (0, 0, 0)), (button_x*cellsize+6, button_y*cellsize+32))
+    screen.blit(font.render(text, True, (0, 0, 0)), (button_x*cellsize+cellsize/16.667, button_y*cellsize+cellsize/3.125))
     pygame.display.flip()
     pygame.display.update()
     clock.tick(60)
