@@ -1,15 +1,15 @@
 import pygame
+from time import sleep
 from CellClass import Cell
 pygame.init()
 
-cellsize = 50
+cellsize = 100
 grid = []
-rows = 20
-cols = 30
+rows = 15
+cols = 20
 block_selected = "Block"
 cell_type_clicked = "None"
 path_calculated = False
-enemies = []
 
 red = (255,0,0)
 white = (255,255,255)
@@ -20,6 +20,7 @@ screen = pygame.display.set_mode([width, height])
 
 game_started = True
 
+#drawers grid
 for row in range(rows):
     for col in range(cols):
         rect_x = cellsize * col
@@ -37,8 +38,10 @@ for row in range(rows):
 
 #changes where button is, button is end goal and timer
 
-button = grid[5][10]
+button = grid[7][19]
 button.set_cell("Button")
+grid[7][1].set_cell("Enemy")
+grid[9][1].set_cell("Enemy")
 button.dist = 0
 button_x = button.x
 button_y = button.y
@@ -80,6 +83,9 @@ while game_started:
             game_started = False
             
         if button.button_reached == True:
+            text = 'Lost'
+            pygame.display.update()
+            sleep(1)
             game_started = False
         
         #Cycles through blocks to place using number keys
@@ -88,15 +94,15 @@ while game_started:
             if event.key == pygame.K_1:
                 block_selected = "Block"
                 print(f"Selected: {block_selected}")
+#             elif event.key == pygame.K_9:
+#                 block_selected = "Enemy"
+#                 print(f"Selected: {block_selected}")
             elif event.key == pygame.K_2:
-                block_selected = "Enemy"
-                print(f"Selected: {block_selected}")
-            elif event.key == pygame.K_3:
                 block_selected = "None"
                 print(f"Selected: {block_selected}")
-            elif event.key == pygame.K_0:
-                block_selected = "Void"
-                print(f"Selected: {block_selected}")
+#             elif event.key == pygame.K_0:
+#                 block_selected = "Void"
+#                 print(f"Selected: {block_selected}")
                 
         #Recalculates all the pathfinding numbers
         
@@ -110,7 +116,7 @@ while game_started:
             row_clicked = click_y // cellsize
             cell_type_clicked = grid[row_clicked][col_clicked].cell_type
             
-            if cell_type_clicked == "Void":
+            if cell_type_clicked in ["Void", "Enemy"]:
                 print("You cannot place there")
             
             elif cell_type_clicked == "Button":

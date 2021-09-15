@@ -1,5 +1,6 @@
 import pygame
-from fractions import Fraction
+import random
+
 class Cell:
     def __init__(self,x,y,cell_type,button_reached,enemies_cell):
         self.dist = None
@@ -50,6 +51,13 @@ class Cell:
                     neigh = enemy_neighbour
                     if neigh.cell_type == "Button":
                         neigh.button_reached = True
+                        
+#               random function to make the game more interesting
+                elif enemy_neighbour.dist == min_dist:
+                    if random.choice([0,1]) == 1:
+                        min_dist = enemy_neighbour.dist
+                        neigh = enemy_neighbour
+                        
         neigh.enemies_cell += 1
         neigh.set_cell("Enemy")
         self.enemies_cell -= 1
@@ -68,7 +76,10 @@ class Cell:
         elif cell_type == "Block":
             self.colour = (120,120,120)
         elif cell_type == "Enemy":
-            self.colour = (255,0,0)
+            if self.enemies_cell > 1:
+                self.colour = (100,0,0)
+            else:
+                self.colour = (255,0,0)
         elif cell_type == "Void":
             self.colour = (50,50,200)
     
